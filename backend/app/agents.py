@@ -28,7 +28,6 @@ _fallback_client = None
 _semaphore = asyncio.Semaphore(MAX_PARALLEL_CALLS)
 
 def get_client():
-    """Create the Gemini client lazily so missing keys produce a clear runtime error."""
     global _client
     if _client is None:
         api_key = os.getenv("GEMINI_API_KEY")
@@ -39,7 +38,6 @@ def get_client():
 
 
 def get_fallback_client():
-    """Create the optional fallback Gemini client lazily."""
     global _fallback_client
     api_key = os.getenv("GEMINI_FALLBACK_API_KEY")
     if not api_key or api_key == os.getenv("GEMINI_API_KEY"):
@@ -67,7 +65,6 @@ async def _generate_content(client, model: str, prompt: str, config):
 
 
 async def ask_ai(prompt: str, *, json_mode: bool = False, temperature: float = 0.35) -> str:
-    """Async model call with concurrency control and timeout."""
     config = types.GenerateContentConfig(
         temperature=temperature,
         max_output_tokens=3000,
@@ -97,7 +94,6 @@ async def ask_ai(prompt: str, *, json_mode: bool = False, temperature: float = 0
     return text
 
 def parse_json(text: str) -> dict:
-    """Parse JSON even if a provider wraps it in a code fence."""
     cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", text.strip(), flags=re.I)
     start, end = cleaned.find("{"), cleaned.rfind("}")
     if start < 0 or end < start:
@@ -108,7 +104,6 @@ def parse_json(text: str) -> dict:
     return value
 
 def _safe_calculate(expression: str) -> str:
-    """Evaluate arithmetic only. No names, calls, attributes, imports or code execution."""
     tree = ast.parse(expression, mode="eval")
     allowed = (
         ast.Expression, ast.BinOp, ast.UnaryOp, ast.Constant,
@@ -131,7 +126,6 @@ def _safe_calculate(expression: str) -> str:
 
 
 def run_local_tool(name: str, arguments: dict) -> dict:
-    """Allowlisted tools only; never execute model-generated Python or shell commands."""
     if name == "text_stats":
         text = str(arguments.get("text", ""))[:10000]
         words = re.findall(r"\b[\w'-]+\b", text)
@@ -193,7 +187,6 @@ USER TASK:
 
 
 async def tool_selector_agent(task: str, plan: dict) -> list:
-    """Select from a tiny allowlist; tool arguments are validated again locally."""
     prompt = f"""
 Choose zero, one or two tools from this allowlist only:
 {json.dumps(AVAILABLE_TOOLS)}
@@ -230,7 +223,6 @@ Plan: {json.dumps(plan)}
 
 
 async def prompt_architect_agent(task: str, plan: dict) -> list:
-    """Create distinct prompt strategies grounded in the same plan."""
     prompt = f"""
 You are the Prompt Architect. Create exactly three different prompt strategies for the task.
 Use the plan as requirements. Do not solve the task; write prompts that will solve it.
