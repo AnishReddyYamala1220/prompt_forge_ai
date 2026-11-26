@@ -19,7 +19,7 @@ import {
   Zap,
 } from 'lucide-react'
 
-const API_URL = import.meta.env.VITE_API_URL || ''
+const API_URL = import.meta.env.VITE_API_URL || 'https://promptforge-ai-backend-h43i.onrender.com'
 
 const agentCards = [
   { icon: Search, number: '01', name: 'Planner Agent', text: 'Decomposes your task and identifies goals and constraints.' },

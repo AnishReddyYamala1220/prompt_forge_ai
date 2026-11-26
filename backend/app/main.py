@@ -1,4 +1,6 @@
+
 import json
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -28,7 +30,11 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        os.getenv("FRONTEND_URL", "https://prompt-forge-ai.netlify.app/"),
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -41,13 +47,18 @@ class RunRequest(BaseModel):
 
 @app.get("/api/health")
 async def health():
-    return {"status": "ok", "service": "PromptForge AI", "version": "2.0.0"}
+    return {
+        "status": "ok",
+        "service": "PromptForge AI",
+        "version": "2.0.0"
+    }
 
 
 @app.post("/api/run")
 async def run(request: RunRequest):
     try:
         result = await run_workflow(request.task.strip())
+
         save_run(
             result["task"],
             result["final_answer"],
@@ -63,7 +74,9 @@ async def run(request: RunRequest):
                 "model": result["model"],
             }),
         )
+
         return result
+
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
