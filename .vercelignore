@@ -1,0 +1,7 @@
+**/.env
+**/.env.*
+**/.venv
+**/node_modules
+backend/promptforge.db
+**/__pycache__
+**/*.pyc
