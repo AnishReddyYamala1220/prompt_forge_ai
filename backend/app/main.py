@@ -28,19 +28,19 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "https://prompt-forge-ai.netlify.app",
         "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        os.getenv("FRONTEND_URL", "https://prompt-forge-ai.netlify.app/"),
+        "http://127.0.0.1:5173"
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
 class RunRequest(BaseModel):
     task: str = Field(min_length=5, max_length=5000)
 
@@ -84,3 +84,11 @@ async def run(request: RunRequest):
 @app.get("/api/history")
 async def history():
     return {"runs": get_runs()}
+
+@app.get("/api/health")
+async def health():
+    return {"status": "ok"}
+
+@app.get("/")
+async def root():
+    return {"message": "PromptForge AI Backend is running"}
